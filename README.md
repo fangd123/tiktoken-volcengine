@@ -129,3 +129,88 @@ setup(
 Then simply `pip install ./my_tiktoken_extension` and you should be able to use your
 custom encodings! Make sure **not** to use an editable install.
 
+## 火山引擎大模型分词扩展
+
+这是一个为火山引擎方舟大模型平台(ARK)提供的tiktoken扩展。它允许你使用tiktoken API访问火山引擎的分词功能。
+
+### 安装
+
+1. 克隆此仓库
+2. 安装扩展:
+   ```bash
+   pip install ./volcengine_tiktoken_extension
+   ```
+
+### 使用方法
+
+```python
+import os
+import tiktoken
+
+# 设置API密钥
+os.environ["ARK_API_KEY"] = "your_api_key_here"
+
+# 方式1: 使用预定义的编码名称
+enc = tiktoken.get_encoding("volcengine-doubao-pro-32k-241215")
+# 注意: 虽然编码器名称带有前缀，但实际API调用使用的是不带前缀的模型名称
+
+# 方式2: 直接使用模型名称（自动添加前缀）
+enc = tiktoken.encoding_for_model("doubao-pro-32k-241215")
+# 注意: 虽然传入的是不带前缀的名称，但会自动添加前缀成为"volcengine-doubao-pro-32k-241215"
+# 实际API调用时仍使用不带前缀的名称"doubao-pro-32k-241215"
+
+# 方式3: 使用任意模型名称 
+# 任意有效的火山引擎模型都可以直接使用
+enc = tiktoken.encoding_for_model("your-custom-model-name")
+
+# 编码文本
+text = "天空为什么这么蓝"
+tokens = enc.encode(text)
+print(f"编码结果: {tokens}")
+
+# 批量编码
+texts = ["天空为什么这么蓝", "花儿为什么这么香"]
+batch_tokens = enc.encode_batch(texts)
+print(f"批量编码结果: {batch_tokens}")
+
+# 查看实际使用的API模型名称（不带前缀）
+print(f"API模型名称: {enc.api_model_name}")
+
+# 查看tiktoken编码器名称（带前缀）
+print(f"编码器名称: {enc.name}")
+```
+
+### 模型名称说明
+
+本扩展在内部和API调用之间维护了两套命名方式:
+
+1. **tiktoken编码器名称**：带有`volcengine-`前缀，如`volcengine-doubao-pro-32k-241215`
+   - 这是tiktoken内部使用的名称，用于在tiktoken中唯一标识编码器
+
+2. **API模型名称**：不带前缀，如`doubao-pro-32k-241215`
+   - 这是实际发送给火山引擎API的模型名称
+   - 扩展会自动去除前缀后再调用API
+
+### 支持的模型
+
+扩展支持以下两种使用模式:
+
+1. **预定义模型**：目前内置支持以下火山引擎模型:
+   - doubao-pro-32k-241215
+
+2. **动态支持任意模型**：
+   - 任何非tiktoken内置模型的请求都会自动使用火山引擎API进行处理
+   - 可以直接使用模型名称，无需添加前缀
+   - 内置编码（如cl100k_base, p50k_base等）不受影响
+
+### 限制
+
+- 目前解码功能不完整，因为火山引擎API没有提供直接的解码功能。
+- 仅支持基本的编码功能，不支持完整的BPE操作。
+- 使用非预定义模型时，请确保该模型在火山引擎平台上存在。
+- 默认使用`https://ark.cn-beijing.volces.com/api/v3/tokenization`作为API端点。
+
+### 更多信息
+
+有关火山引擎方舟大模型平台的更多信息，请参阅[火山引擎官方文档](https://www.volcengine.com/docs/82379)。
+

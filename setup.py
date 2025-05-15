@@ -1,19 +1,16 @@
-from setuptools import setup
-from setuptools_rust import Binding, RustExtension
+from setuptools import setup, find_namespace_packages
 
 setup(
-    name="tiktoken",
-    rust_extensions=[
-        RustExtension(
-            "tiktoken._tiktoken",
-            binding=Binding.PyO3,
-            # Between our use of editable installs and wanting to use Rust for performance sensitive
-            # code, it makes sense to just always use --release
-            debug=False,
-            features=["python"],
-        )
+    name="volcengine_tiktoken_extension",
+    version="0.1.0",
+    description="Tiktoken extension for Volcengine Ark models tokenization",
+    author="Your Name",
+    author_email="your.email@example.com",
+    packages=find_namespace_packages(include=['tiktoken_ext*']),
+    install_requires=[
+        "tiktoken",
+        "volcenginesdkarkruntime",
+        "requests"
     ],
-    package_data={"tiktoken": ["py.typed"]},
-    packages=["tiktoken", "tiktoken_ext"],
-    zip_safe=False,
+    python_requires=">=3.6",
 )
